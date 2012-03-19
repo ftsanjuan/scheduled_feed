@@ -1,0 +1,109 @@
+<?php
+
+/**
+ * @file
+ * Provides test classes for Scheduled Feed module.
+ */
+
+class ScheduledFeedTestCase extends DrupalWebTestCase {
+  /**
+   * Implements getInfo().
+   */
+  function getInfo() {
+    return array(
+      'name' => t('Scheduled Feed'),
+      'description' => t('Tests for ensuring the scheduled_feed module returns the correct data.'),
+      'group' => t('Scheduled Feed'),
+    );
+  }
+
+  /**
+   * Implements setUp().
+   */
+  function setUp() {
+    parent::setUp('scheduled_feed');
+  }
+
+  /**
+   * Test Interval Restrictions.
+   */
+  function testScheduledFeedGet() {
+    // Generate testing variables and set in database
+    $length = 10;
+    $current = time();
+    $delay = 10;
+    $start = $current + $delay;
+    for ( $i = 0; $i < 3; $i++) {
+      scheduled_feed_data_add('data_string_' . ($i + 1), $current + ($i * $length) + $delay, $current + (($i + 1) * $length) + $delay);
+    }
+
+    // Check data returned before first period starts
+    $data = scheduled_feed_get($current);
+    $this->assertFalse($data, t('Before First Period > No data was returned before first period started.'));
+
+    // Check data returned at exactly when last period ends
+    $data = scheduled_feed_get($start + 30);
+    $this->assertFalse($data, t('After Last Period > No data was returned after the end of last period.'));
+
+    // Check data returned at exactly when first period starts
+    $data = scheduled_feed_get($start);
+    $this->assertEqual($data, 'data_string_1', t('Period-start > Correct data returned at exact start of first period: @data.', array('@data' => $data)));
+
+    // Check data returned at exactly when first period ends
+    $data = scheduled_feed_get($start + $length);
+    $this->assertEqual($data, 'data_string_2', t('First Period End > Correct data returned at end of first period: @data.', array('@data' => $data)));
+
+    // Check data returned at mid-period in various: 1st period
+    $data = scheduled_feed_get($start + 5);
+    $this->assertEqual($data, 'data_string_1', t('Mid-First Period  > Correct data returned in middle of first period: @data.', array('@data' => $data)));
+
+    // Check data returned at mid-period in various 2nd period
+    $data = scheduled_feed_get($start + 15);
+    $this->assertEqual($data, 'data_string_2', t('Mid-Second Period > Correct data returned in middle of second period: @data.', array('@data' => $data)));
+  }
+
+  /**
+   * Tests returned data when a default has been set
+   */
+  function testScheduledFeedGetWithDefault() {
+    // Clear previous settings, recreate test setup
+    scheduled_feed_data_clear();
+    $length = 10;
+    $current = time();
+    $delay = 10;
+    $start = $current + $delay;
+    for ( $i = 0; $i < 3; $i++) {
+      scheduled_feed_data_add('data_string_' . ($i + 1), $start + ($i * $length), $start + ($i + 1) * $length);
+    }
+
+    // Check data returned after first period starts
+    $data = scheduled_feed_get($start);
+    $this->assertEqual($data, 'data_string_1', t('Before Default Set > Correct data returned at exact start of the first period: @data.', array('@data' => $data)));
+    $this->assertFalse(scheduled_feed_get_default(), t('Before Default Set > Called scheduled_feed_get_default() and it correctly returned FALSE.'));
+
+    // set data with id = 2 to default
+    // and hold this value
+    scheduled_feed_set_default(2);
+
+    // Check that calling scheduled_feed_get_default() correctly returns the default
+    $default = scheduled_feed_get_default();
+    $this->assertEqual($default, 'data_string_2', t('After Default Set > Called scheduled_feed_get_default() and it correctly returned default data: @default.', array('@default' => $default)));
+
+    /**
+     * Check data returned while there is still an existing ("active")
+     * period
+     * Expected result: data should be same as for first period
+     */
+    $data = scheduled_feed_get($start);
+    $this->assertEqual($data, 'data_string_1', t('After Default Set (During Active Period) > Correct data returned when a default was set: @data.', array('@data' => $data)));
+
+
+    /**
+     * Check data returned after all periods are done (No active period)
+     * period
+     * Expected result: the default data should be returned
+     */
+    $data = scheduled_feed_get($start + 30);
+    $this->assertEqual($data, 'data_string_2', t('After Default Set (No Active Period) > Correct data returned when a default was set: @data.', array('@data' => $data)));
+  }
+}
