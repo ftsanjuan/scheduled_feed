@@ -26,7 +26,7 @@ function scheduled_feed_menu() {
 
 
 /**
- *
+ * Returns a form for adding a new scheduled data
  */
 function scheduled_feed_form_add() {
   $form['data'] = array(
@@ -47,7 +47,7 @@ function scheduled_feed_form_add() {
     '#default_value' => '',
     '#required' => TRUE,
   );
-  $form['checkbox'] = array(
+  $form['is_default'] = array(
     '#type' => 'checkbox',
     '#title' => t('Set as default data returned?'),
     '#default_value' => FALSE,
@@ -57,7 +57,27 @@ function scheduled_feed_form_add() {
     '#value' => SCHEDULED_FEED_PRIMARY_TID,
   );
 
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add data'),
+  );
+
   return $form;
+}
+
+/**
+ * Handles submitting new scheduled data
+ */
+function scheduled_feed_form_add_submit($form, &$form_state) {
+  $data = (object) array(
+    'data' => $form_state['values']['data'],
+    'start' => $form_state['values']['start'],
+    'end' => $form_state['values']['end'],
+    'is_default' => $form_state['values']['is_default'],
+    'tid' => $form_state['values']['tid'],
+  );
+  drupal_write_record('scheduled_feed_data', $data);
+  dsm(t("New feed data was successfully saved."));
 }
 
 
