@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function scheduled_feed_schema() {
+  $schema['scheduled_feed_data'] = array(
+    'description' => 'The base containing timestamps and the corresponding feed data to be displayed.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for this piece of feed data.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'data' => array(
+        'description' => 'The data to be displayed.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'start' => array(
+        'description' => 'Timestamp when data should start being displayed',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'end' => array(
+        'description' => 'Timestamp when data should stop being displayed',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'is_default' => array(
+        'description' => 'Is this the default data for this feed?',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0),
+      'tid' => array(
+        'description' => 'Identifies the group/category this data belongs to',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'default' => 0),
+      ),
+    'indexes' => array(
+      'id'        => array('id'),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function scheduled_feed_uninstall() {
+  drupal_uninstall_schema('scheduled_feed');
+}
+
+
+
+
