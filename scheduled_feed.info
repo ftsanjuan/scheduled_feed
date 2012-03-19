@@ -1,0 +1,7 @@
+name = Scheduled Feed
+description = Provides data feed functionality to return particular data based on current timestamp.
+package = Scheduled Feed
+core = 7.x
+
+files[] = 'scheduled_feed.inc'
+files[] = 'scheduled_feed.test'
