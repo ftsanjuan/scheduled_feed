@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @file
+ * Provides data feed functionality based on current timestamp.
+ */
+
+require_once dirname(__FILE__) . '/scheduled_feed.inc';
+
+define('SCHEDULED_FEED_PERM_ADMIN', 'admin scheduled feed');
+
+/**
+ * Implements hook_menu().
+ */
+function scheduled_feed_menu() {
+  $items['admin/scheduledfeed/add'] = array(
+    'title' => 'Scheduled Feed Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('scheduled_feed_form_add'),
+    'access arguments' => array('admin scheduled feed'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+
+/**
+ *
+ */
+function scheduled_feed_form_add() {
+  $form['data'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Data to be displayed'),
+    '#default_value' => '',
+    '#required' => TRUE,
+  );
+  $form['start'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start timestamp'),
+    '#default_value' => '',
+    '#required' => TRUE,
+  );
+  $form['end'] = array(
+    '#type' => 'textfield',
+    '#title' => t('End timestamp'),
+    '#default_value' => '',
+    '#required' => TRUE,
+  );
+  $form['checkbox'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Set as default data returned?'),
+    '#default_value' => FALSE,
+  );
+  $form['tid'] = array(
+    '#type' => 'hidden',
+    '#value' => SCHEDULED_FEED_PRIMARY_TID,
+  );
+
+  return $form;
+}
+
+
+
+
+
