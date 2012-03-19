@@ -5,3 +5,4 @@ core = 7.x
 
 files[] = 'scheduled_feed.inc'
 files[] = 'scheduled_feed.test'
+files[] = 'scheduled_feed.views.inc'

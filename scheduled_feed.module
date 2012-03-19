@@ -9,6 +9,14 @@ require_once dirname(__FILE__) . '/scheduled_feed.inc';
 
 define('SCHEDULED_FEED_PERM_ADMIN', 'admin scheduled feed');
 
+
+/**
+ * Implements hook_views_api().
+ */
+function scheduled_feed_views_api() {
+  return array('api' => 3);
+}
+
 /**
  * Implements hook_menu().
  */
