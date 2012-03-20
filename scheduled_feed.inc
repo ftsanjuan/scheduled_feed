@@ -5,8 +5,6 @@
  * Supporting functions for adding/retrieving/setting default dates
  */
 
-define('SCHEDULED_FEED_PRIMARY_TID', 1);
-
 /**
  * Adds a piece of data to be returned between a particular
  * start timestamp and end timestamp
@@ -22,9 +20,13 @@ define('SCHEDULED_FEED_PRIMARY_TID', 1);
  *    could be found for the current time
  *  @param $tid
  *    the group/category this data belongs to
- *    Default: 1 (SCHEDULED_FEED_PRIMARY_TID)
+ *    Default: Primary Feed's tid
  */
-function scheduled_feed_data_add($data, $start, $end, $is_default = FALSE, $tid = SCHEDULED_FEED_PRIMARY_TID) {
+function scheduled_feed_data_add($data, $start, $end, $is_default = FALSE, $tid = NULL) {
+  if ( is_null($tid) ) {
+    $tid = scheduled_feed_get_primary_tid();
+  }
+
   $data = (object) array(
     'data' => $data,
     'start' => $start,
@@ -64,11 +66,15 @@ function scheduled_feed_data_clear() {
  *   default: time()
  * @param $tid
  *   the group/category to check in
- *   default: 1 (SCHEDULED_FEED_PRIMARY_TID)
+ *   Default: Primary Feed's tid
  */
-function scheduled_feed_get($time = NULL, $tid = SCHEDULED_FEED_PRIMARY_TID) {
+function scheduled_feed_get($time = NULL, $tid = NULL) {
   if ( is_null($time) ) {
     $time = time();
+  }
+
+  if ( is_null($tid) ) {
+    $tid = scheduled_feed_get_primary_tid();
   }
 
   $feed = db_select('scheduled_feed_data', 'd')
@@ -99,9 +105,13 @@ function scheduled_feed_get($time = NULL, $tid = SCHEDULED_FEED_PRIMARY_TID) {
  *
  * @param $tid
  *    the group/category id to retrieve data from
- *    default: 1 (SCHEDULED_FEED_PRIMARY_TID)
+ *    Default: Primary Feed's tid
  */
-function scheduled_feed_get_default($tid = SCHEDULED_FEED_PRIMARY_TID) {
+function scheduled_feed_get_default($tid = NULL) {
+  if ( is_null($tid) ) {
+    $tid = scheduled_feed_get_primary_tid();
+  }
+
   $default = db_select('scheduled_feed_data', 'd')
     ->fields('d')
     ->condition('tid', $tid, '=')
@@ -145,11 +155,15 @@ function scheduled_feed_set_default($id) {
  *
  * @param $tid
  *    the id of the feed to verify
- *    default: 1 (PRIMARY ID)
+ *    Default: Primary Feed's tid
  *  @return
  *    TRUE if there are no issues with the particular feed, FALSE otherwise
  */
-function scheduled_feed_verify($tid = SCHEDULED_FEED_PRIMARY_TID) {
+function scheduled_feed_verify($tid = NULL) {
+  if ( is_null($tid) ) {
+    $tid = scheduled_feed_get_primary_tid();
+  }
+
   $feed = db_select('scheduled_feed_data', 'd')
     ->fields('d')
     ->condition('tid', $tid, '=')
@@ -175,4 +189,11 @@ function scheduled_feed_verify($tid = SCHEDULED_FEED_PRIMARY_TID) {
  */
 function scheduled_feed_get_vid() {
   return variable_get('scheduled_feed_vid', FALSE);
+}
+
+/**
+ * Returns the primary scheduled feed's tid
+ */
+function scheduled_feed_get_primary_tid() {
+  return variable_get('scheduled_feed_primary_tid', FALSE);
 }
