@@ -247,3 +247,43 @@ function scheduled_feed_get_vid() {
 function scheduled_feed_get_primary_tid() {
   return variable_get('scheduled_feed_primary_tid', FALSE);
 }
+
+/**
+ * Generates a feed from an array of strings and separates them by
+ * a specified period length
+ *
+ * @param $data
+ *    An array of strings containing the data to be displayed
+ * @param $start
+ *    Timestamp when the first data will start being displayed
+ *    Default: time()
+ * @param $length
+ *    The length of time (in seconds), to display each piece of data
+ *    Default: 60
+ * @param $tid
+ *    The feed id this data should be associated with
+ *    Default: (scheduled feed primary tid)
+ * @param $clear
+ *    if TRUE, clears all feed data already in database before
+ *      adding new feed data
+ *    Default: TRUE
+ */
+function scheduled_feed_generate_sequential_feed($data, $start = NULL, $length = 60, $tid = NULL, $clear = TRUE) {
+  if ( $clear ) {
+    scheduled_feed_data_clear();
+  }
+
+  if ( is_null($start) ) {
+    $start = time();
+  }
+
+  if ( is_null($tid) ) {
+    $tid = scheduled_feed_get_primary_tid();
+  }
+
+  for ( $i = 0; $i < count($data); $i++ ) {
+    scheduled_feed_data_add($data[$i], $start + ($i * $length), $start + (($i + 1) * $length), FALSE, $tid);
+  }
+
+  dsm(t('Successfully generated feed.'));
+}
