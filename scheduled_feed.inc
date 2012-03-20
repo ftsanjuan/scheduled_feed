@@ -168,3 +168,11 @@ function scheduled_feed_verify($tid = SCHEDULED_FEED_PRIMARY_TID) {
     return TRUE;
   }
 }
+
+/**
+ * Returns the vocabulary id containing the Scheduled Feed
+ * groups/categories
+ */
+function scheduled_feed_get_vid() {
+  return variable_get('scheduled_feed_vid', FALSE);
+}

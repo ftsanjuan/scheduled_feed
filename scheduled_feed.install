@@ -52,7 +52,17 @@ function scheduled_feed_schema() {
  * Implements hook_uninstall().
  */
 function scheduled_feed_uninstall() {
+  // delete tables
   drupal_uninstall_schema('scheduled_feed');
+
+  // remove vocabulary
+  $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE module = 'scheduled_feed'")->fetchField();
+  if ( $vid && function_exists('taxonomy_vocabulary_delete') ) {
+    taxonomy_vocabulary_delete($vid);
+  }
+
+  // delete variables
+  db_query("DELETE FROM {variable} WHERE name like '%scheduled_feed%'");
 }
 
 

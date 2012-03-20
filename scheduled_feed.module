@@ -11,6 +11,41 @@ define('SCHEDULED_FEED_PERM_ADMIN', 'admin scheduled feed');
 
 
 /**
+ * Implements hook_install().
+ */
+function scheduled_feed_install() {
+  // generate vocabulary and store it
+  $vocab = (object) array(
+    'module' => 'scheduled_feed',
+    'name' => 'Scheduled Feed',
+    'machine_name' => 'scheduled_feed',
+    'description' => 'Contains various scheduled feeds',
+  );
+  taxonomy_vocabulary_save($vocab);
+
+  // get vid
+  $vocab = db_select('taxonomy_vocabulary', 'v')
+    ->fields('v')
+    ->condition('module', 'scheduled_feed', '=')
+    ->execute()
+    ->fetch();
+
+  if ( $vocab ) {
+    // save this vid to a variable for easy access
+    variable_set('scheduled_feed_vid', $vocab->vid);
+
+    // save the primary term to taxonomy db
+    $primary = (object) array(
+      'vid' => $vocab->vid,
+      'name' => 'Primary Scheduled Feed',
+      'tid' => SCHEDULED_FEED_PRIMARY_TID,
+      'description' => 'The primary scheduled feed',
+    );
+    taxonomy_term_save($primary);
+  }
+}
+
+/**
  * Implements hook_views_api().
  */
 function scheduled_feed_views_api() {
