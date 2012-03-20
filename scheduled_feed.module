@@ -9,7 +9,6 @@ require_once dirname(__FILE__) . '/scheduled_feed.inc';
 
 define('SCHEDULED_FEED_PERM_ADMIN', 'admin scheduled feed');
 
-
 /**
  * Implements hook_install().
  */
@@ -38,10 +37,11 @@ function scheduled_feed_install() {
     $primary = (object) array(
       'vid' => $vocab->vid,
       'name' => 'Primary Scheduled Feed',
-      'tid' => SCHEDULED_FEED_PRIMARY_TID,
       'description' => 'The primary scheduled feed',
     );
     taxonomy_term_save($primary);
+    // save the primary tid
+    variable_set('scheduled_feed_primary_tid', $primary->tid);
   }
 }
 
@@ -104,7 +104,9 @@ function scheduled_feed_form_add() {
 
   $form['tid'] = array(
     '#type' => 'select',
-    '#default_value' => SCHEDULED_FEED_PRIMARY_TID,
+    '#title' => 'Feed',
+    '#description' => 'The feed this data should be attached to.',
+    '#default_value' => scheduled_feed_get_primary_tid(),
     '#options' => $list,
   );
   $form['submit'] = array(
@@ -129,8 +131,3 @@ function scheduled_feed_form_add_submit($form, &$form_state) {
   drupal_write_record('scheduled_feed_data', $data);
   dsm(t("New feed data was successfully saved."));
 }
-
-
-
-
-
