@@ -6,6 +6,7 @@
  */
 
 require_once dirname(__FILE__) . '/scheduled_feed.inc';
+require_once dirname(__FILE__) . '/custom/scheduled_feed.custom.inc';
 
 define('SCHEDULED_FEED_PERM_ADMIN', 'admin scheduled feed');
 
