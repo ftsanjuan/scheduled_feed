@@ -64,7 +64,3 @@ function scheduled_feed_uninstall() {
   // delete variables
   db_query("DELETE FROM {variable} WHERE name like '%scheduled_feed%'");
 }
-
-
-
-
