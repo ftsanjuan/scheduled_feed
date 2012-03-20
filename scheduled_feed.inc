@@ -45,7 +45,7 @@ function scheduled_feed_data_add($data, $start, $end, $is_default = FALSE, $tid 
  */
 function scheduled_feed_data_save($data) {
   drupal_write_record('scheduled_feed_data', $data);
-  dsm('Feed data was successfully saved');
+  dsm('Feed data was saved successfully.');
   return $data;
 }
 
