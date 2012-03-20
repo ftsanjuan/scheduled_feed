@@ -89,8 +89,8 @@ function scheduled_feed_get($time = NULL, $tid = NULL) {
     return $feed->data;
   }
   else {
-    // try to the default data if it was previously defined
-    $default = scheduled_feed_get_default();
+    // try to get the default data if it was previously defined
+    $default = scheduled_feed_get_default($tid);
     if ( $default ) {
       return $default;
     }
