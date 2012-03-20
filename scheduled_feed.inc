@@ -101,6 +101,56 @@ function scheduled_feed_get($time = NULL, $tid = NULL) {
 }
 
 /**
+ * Returns the data for a particular timestamp listed under
+ * a specified feed name
+ *
+ * @param $name
+ *   the name of the feed to retrieve data from
+ * @param $time
+ *   the timestamp to check for
+ *   default: time()
+ */
+function scheduled_feed_get_by_feed_name($name, $time = NULL) {
+  $term = taxonomy_get_term_by_name($name);
+
+  if ( count($term) > 0 ) {
+    // retreive the first term in the array
+    // recall: results from taxonomy_get_term_by_name
+    // are indexed by their tid
+    foreach ( $term as $key => $value ) {
+      $tid = $key;
+      break;
+    }
+
+    if ( is_null($time) ) {
+      $time = time();
+    }
+
+    $feed = db_select('scheduled_feed_data', 'd')
+      ->fields('d')
+      ->condition('start', $time, '<=')
+      ->condition('end', $time, '>')
+      ->condition('tid', $tid, '=')
+      ->execute()
+      ->fetch();
+
+    if ( $feed ) {
+      return $feed->data;
+    }
+    else {
+      // try to get the default data if it was previously defined
+      $default = scheduled_feed_get_default($tid);
+      if ( $default ) {
+        return $default;
+      }
+    }
+  }
+
+  dsm(t('No data was found.'));
+  return FALSE;
+}
+
+/**
  * Returns the default data if it is defined
  *
  * @param $tid
