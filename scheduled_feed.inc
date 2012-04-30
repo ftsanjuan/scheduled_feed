@@ -45,7 +45,7 @@ function scheduled_feed_data_add($data, $start, $end, $is_default = FALSE, $tid 
  */
 function scheduled_feed_data_save($data) {
   drupal_write_record('scheduled_feed_data', $data);
-  dsm('Feed data was saved successfully.');
+  // dsm('Feed data was saved successfully.');
   return $data;
 }
 
@@ -55,7 +55,7 @@ function scheduled_feed_data_save($data) {
 function scheduled_feed_data_clear() {
   db_truncate('scheduled_feed_data')
     ->execute();
-  dsm(t('Scheduled feed data cleared successfully.'));
+  // dsm(t('Scheduled feed data cleared successfully.'));
 }
 
 /**
@@ -96,7 +96,7 @@ function scheduled_feed_get($time = NULL, $tid = NULL) {
     }
   }
 
-  dsm(t('No data was found.'));
+  // dsm(t('No data was found.'));
   return FALSE;
 }
 
@@ -146,7 +146,7 @@ function scheduled_feed_get_by_feed_name($name, $time = NULL) {
     }
   }
 
-  dsm(t('No data was found.'));
+  // dsm(t('No data was found.'));
   return FALSE;
 }
 
@@ -173,7 +173,7 @@ function scheduled_feed_get_default($tid = NULL) {
     return $default->data;
   }
 
-  dsm(t('No default data was defined.'));
+  // dsm(t('No default data was defined.'));
   return FALSE;
 }
 
@@ -193,10 +193,10 @@ function scheduled_feed_set_default($id) {
     ->execute();
 
   if ( $result ) {
-    dsm(t('Data with id @id was successfully set as default.', array('@id' => $id)));
+    // dsm(t('Data with id @id was successfully set as default.', array('@id' => $id)));
   }
 
-  dsm(t('Default data could not be set.'));
+  // dsm(t('Default data could not be set.'));
   return FALSE;
 }
 
@@ -285,5 +285,5 @@ function scheduled_feed_generate_sequential_feed($data, $start = NULL, $length =
     scheduled_feed_data_add($data[$i], $start + ($i * $length), $start + (($i + 1) * $length), FALSE, $tid);
   }
 
-  dsm(t('Successfully generated feed.'));
+  // dsm(t('Successfully generated feed.'));
 }
