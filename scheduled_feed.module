@@ -130,5 +130,5 @@ function scheduled_feed_form_add_submit($form, &$form_state) {
     'tid' => $form_state['values']['tid'],
   );
   drupal_write_record('scheduled_feed_data', $data);
-  dsm(t("New feed data was successfully saved."));
+  // dsm(t("New feed data was successfully saved."));
 }
