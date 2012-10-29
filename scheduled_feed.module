@@ -6,6 +6,7 @@
  */
 
 require_once dirname(__FILE__) . '/scheduled_feed.inc';
+require_once dirname(__FILE__) . '/includes/core.inc';
 require_once dirname(__FILE__) . '/custom/scheduled_feed.custom.inc';
 
 define('SCHEDULED_FEED_PERM_ADMIN', 'admin scheduled feed');
@@ -64,8 +65,58 @@ function scheduled_feed_menu() {
     'access arguments' => array('admin scheduled feed'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/feed/addbydate'] = array(
+    'title' => 'Scheduled Feed Add By Date',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('scheduled_feed_form_add_by_date'),
+    'access arguments' => array('admin scheduled feed'),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function scheduled_feed_block_info() {
+  $blocks['feed_current'] = array(
+    'info' => t('Scheduled Feed Current Data'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function scheduled_feed_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'feed_current':
+      $block['subject'] = t('Current Feed');
+      $block['content'] = scheduled_feed_current_data_block();
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Displays a Block containing Scheduled Feed's current data
+ */
+function scheduled_feed_current_data_block() {
+  $data = scheduled_feed_get();
+  if ( is_null($data) || $data == "" ) {
+    $data = t("No scheduled data currently available.");
+  }
+
+  $element = array(
+    '#markup' => "<div class='scheduled-feed-data-block scheduled-feed-data-block-current'>" . $data . "</div>",
+  );
+  $output = drupal_render( $element );
+  return $output;
 }
 
 /**
@@ -131,4 +182,91 @@ function scheduled_feed_form_add_submit($form, &$form_state) {
   );
   drupal_write_record('scheduled_feed_data', $data);
   // dsm(t("New feed data was successfully saved."));
+}
+
+/**
+ * Implements hook_form().
+ */
+function scheduled_feed_form_add_by_date() {
+  $current = time();
+  $form['data'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Display Data:'),
+    '#required' => TRUE,
+  );
+  $form['start'] = array(
+    '#type' => 'date_popup',
+    '#title' => 'Display Start:',
+    '#default_value' => date(SCHEDULED_FEED_FORM_TIME_INPUT_FORMAT, $current),
+    '#date_format' => SCHEDULED_FEED_FORM_TIME_INPUT_FORMAT,
+    '#required' => TRUE,
+  );
+  $form['end'] = array(
+    '#type' => 'date_popup',
+    '#title' => 'Display End:',
+    '#default_value' => date(SCHEDULED_FEED_FORM_TIME_INPUT_FORMAT, $current),
+    '#date_format' => SCHEDULED_FEED_FORM_TIME_INPUT_FORMAT,
+    '#required' => TRUE,
+  );
+  // get terms for dropdown
+  $terms = taxonomy_get_tree(scheduled_feed_get_vid());
+  $list = array();
+  foreach ($terms as $term) {
+    $list[$term->tid] = $term->name;
+  }
+
+  $form['tid'] = array(
+    '#type' => 'select',
+    '#title' => 'Feed',
+    '#description' => 'The feed this data should be attached to.',
+    '#default_value' => scheduled_feed_get_primary_tid(),
+    '#options' => $list,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Add Data to Feed',
+  );
+
+  return $form;
+}
+
+/**
+ * Validation : Scheduled Feed Form Add by Date
+ */
+function scheduled_feed_form_add_by_date_validate($form, &$form_state) {
+  $start = scheduled_feed_date_array_to_timestamp($form_state['values']['start']);
+  $end = scheduled_feed_date_array_to_timestamp($form_state['values']['end']);
+
+  // dsm($form_state['values']['start']);
+
+  // verify the dates are chronologically sound
+  if ( $start > $end ) {
+    form_set_error('start', t('Start date must come before end date'));
+  }
+}
+
+/**
+ * Submission : Scheduled Feed Form Add by Date
+ */
+function scheduled_feed_form_add_by_date_submit($form, &$form_state) {
+  $start = scheduled_feed_date_array_to_timestamp($form_state['values']['start']);
+  $end = scheduled_feed_date_array_to_timestamp($form_state['values']['end']);
+
+  // write scheduled data to db
+  $data = array(
+    'data' => $form_state['values']['data'],
+    'start' => $start,
+    'end' => $end,
+    'is_default' => FALSE,
+    'tid' => scheduled_feed_get_primary_tid(),
+  );
+
+  $result = drupal_write_record('scheduled_feed_data', $data);
+  if ( $result ) {
+    dsm(t('Data successfully added to feed.'));
+  }
+  else {
+    dsm(t('There was a problem adding the data to the feed.'));
+  }
+
 }
