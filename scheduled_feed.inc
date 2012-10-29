@@ -55,7 +55,7 @@ function scheduled_feed_data_save($data) {
 function scheduled_feed_data_clear() {
   db_truncate('scheduled_feed_data')
     ->execute();
-  // dsm(t('Scheduled feed data cleared successfully.'));
+  dsm(t('Scheduled feed data cleared successfully.'));
 }
 
 /**
@@ -286,4 +286,22 @@ function scheduled_feed_generate_sequential_feed($data, $start = NULL, $length =
   }
 
   // dsm(t('Successfully generated feed.'));
+}
+
+/**
+ * Returns an array containing a start and end timestamp
+ * for a particular day
+ *
+ * @param $date
+ *   a string containing a given date parseable by php's strtotime
+ */
+function scheduled_feed_get_timestamps_for_day($date = NULL) {
+  $times = array();
+  if ( is_null($date) ) {
+    $times['start'] = time();
+  }
+  else {
+    $times['start'] = strtotime($date);
+  }
+
 }
