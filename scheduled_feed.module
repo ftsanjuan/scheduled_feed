@@ -10,6 +10,7 @@ require_once dirname(__FILE__) . '/includes/core.inc';
 require_once dirname(__FILE__) . '/custom/scheduled_feed.custom.inc';
 
 define('SCHEDULED_FEED_PERM_ADMIN', 'admin scheduled feed');
+define('SCHEDULED_FEED_DAY_SECONDS', 86400);
 
 /**
  * Implements hook_install().
@@ -58,14 +59,14 @@ function scheduled_feed_views_api() {
  * Implements hook_menu().
  */
 function scheduled_feed_menu() {
-  $items['admin/feed/add'] = array(
+  $items['admin/scheduled_feed/add'] = array(
     'title' => 'Scheduled Feed Settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('scheduled_feed_form_add'),
     'access arguments' => array('admin scheduled feed'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/feed/addbydate'] = array(
+  $items['admin/scheduled_feed/addbydate'] = array(
     'title' => 'Scheduled Feed Add By Date',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('scheduled_feed_form_add_by_date'),
@@ -97,26 +98,49 @@ function scheduled_feed_block_view($delta = '') {
   switch ($delta) {
     case 'feed_current':
       $block['subject'] = t('Current Feed');
-      $block['content'] = scheduled_feed_current_data_block();
+      $block['content'] = scheduled_feed_data_block();
       break;
+    case 'feed_tomorrow':
+      $tomorrow = scheduled_feed_day_start_timestamp(time() + SCHEDULED_FEED_DAY_SECONDS);
+      $block['subject'] = t('Tomorrow Feed');
+      $block['content'] = scheduled_feed_data_block($tomorrow);
+      break;
+
   }
   return $block;
 }
 
 /**
- * Displays a Block containing Scheduled Feed's current data
+ * Implements hook_theme().
  */
-function scheduled_feed_current_data_block() {
-  $data = scheduled_feed_get();
-  if ( is_null($data) || $data == "" ) {
-    $data = t("No scheduled data currently available.");
-  }
-
-  $element = array(
-    '#markup' => "<div class='scheduled-feed-data-block scheduled-feed-data-block-current'>" . $data . "</div>",
+function scheduled_feed_theme($existing, $type, $theme, $path) {
+  return array(
+    'scheduled_feed_block' => array(
+      'variables' => array('message' => NULL, 'prize' => NULL, 'prize_image' => NULL),
+      'template' => 'custom/templates/block_prize',
+    ),
+    'scheduled_feed_block_alt' => array(
+      'variables' => array('message' => NULL, 'prize' => NULL, 'prize_image' => NULL),
+      'template' => 'custom/templates/block_prize_alt',
+    )
   );
-  $output = drupal_render( $element );
-  return $output;
+}
+
+/**
+ * Displays a block containing Scheduled Feed's data for the specified time
+ * defaults to current time
+ */
+function scheduled_feed_data_block($time = NULL, $layout = 'scheduled_feed_block') {
+  $prize_id = scheduled_feed_get($time);
+
+  if ( is_null($prize_id) || $prize_id == "" ) {
+    $message = t("No scheduled data currently available.");
+    return theme($layout, array('message' => $message));
+  } else {
+    $prize = node_load($prize_id);
+    $prize_image = file_create_url($prize->field_prize_image['und'][0]['uri']);
+    return theme($layout, array('prize' => $prize, 'prize_image' => $prize_image));
+  }
 }
 
 /**
